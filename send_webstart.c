@@ -49,7 +49,7 @@ struct EthInfo
 struct start_web_ip_packet 
 {
     unsigned char dest_mac[ETH_ALEN];
-    unsigned char src_mac[ETH_ALEN];
+    unsigned char src_mac[ETH_ALEN]; 
     unsigned short type;
 };
 struct EthInfo eth0;
@@ -71,16 +71,10 @@ static int eth_set_promisc(const char *pcIfName, int fd, int iFlags)
         return -1;
     }
     
-    if (0 == iFlags)
-    {
-        /* 取消混杂模式 */
+    if (0 == iFlags) /* 取消混杂模式 */
         stIfr.ifr_flags &= ~IFF_PROMISC;
-    }
-    else
-    {
-        /* 设置为混杂模式 */
+    else/* 设置为混杂模式 */
         stIfr.ifr_flags |= IFF_PROMISC;
-    }
 
     iRet = ioctl(fd, SIOCSIFFLAGS, &stIfr);
     if (0 > iRet)
