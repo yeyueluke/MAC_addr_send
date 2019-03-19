@@ -125,75 +125,75 @@ void eth0_open()
 	
     /*bind sock*/
     bzero(&ether0,sizeof(ether0));
-	strcpy(ifr0.ifr_name,eth0.name);
-	ether0.sll_family = PF_PACKET;
-	ioctl(eth0.sock_fd,SIOCGIFINDEX,&ifr0);
-	ether0.sll_ifindex = ifr0.ifr_ifindex;
-	ether0.sll_protocol = htons(ETH_P_ALL);
-	bind0 = bind(eth0.sock_fd,(struct sockaddr_ll*)&ether0,sizeof(struct sockaddr_ll));
-	if(bind0 < 0)
-	{
-	    printf("Bind recv socket failed\n");
-		printf("%d\n",bind0);
-	}
-	else
-	{
-	    printf("Bind recv sock to eth0 success\n");
-	}
-	ioctl(eth0.sock_fd,SIOCGIFHWADDR,&ifr0);
+    strcpy(ifr0.ifr_name,eth0.name);
+    ether0.sll_family = PF_PACKET;
+    ioctl(eth0.sock_fd,SIOCGIFINDEX,&ifr0);
+    ether0.sll_ifindex = ifr0.ifr_ifindex;
+    ether0.sll_protocol = htons(ETH_P_ALL);
+    bind0 = bind(eth0.sock_fd,(struct sockaddr_ll*)&ether0,sizeof(struct sockaddr_ll));
+    if(bind0 < 0)
+    {
+        printf("Bind recv socket failed\n");
+        printf("%d\n",bind0);
+    }
+    else
+    {
+        printf("Bind recv sock to eth0 success\n");
+    }
+    ioctl(eth0.sock_fd,SIOCGIFHWADDR,&ifr0);
 
-	eth_set_promisc(eth0.name, eth0.sock_fd, 1);
-	set_rx_buffer(&eth0);
-	int val = IP_PMTUDISC_DO;
-	setsockopt(eth0.sock_fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
+    eth_set_promisc(eth0.name, eth0.sock_fd, 1);
+    set_rx_buffer(&eth0);
+    int val = IP_PMTUDISC_DO;
+    setsockopt(eth0.sock_fd, IPPROTO_IP, IP_MTU_DISCOVER, &val, sizeof(val));
 }
 
 static void dump_packet(char *buf, int len) 
 {
-	int i = 0;
-	int index = 0;
-	for (i=0; i<len; i++) 
-	{
-		if (i == 1514) 
-			printf("\n--------------------\n");
+    int i = 0;
+    int index = 0;
+    for (i=0; i<len; i++) 
+    {
+        if (i == 1514) 
+	    printf("\n--------------------\n");
 		
-		index = i % 16;
-		printf("0x%02X ", (unsigned char)buf[i]);
-		if (index == 15) 
-			printf("\n");
-	}
-	printf("\n=======================================\n");
+        index = i % 16;
+        printf("0x%02X ", (unsigned char)buf[i]);
+        if (index == 15) 
+	    printf("\n");
+    }
+    printf("\n=======================================\n");
 }
 
 int main(int argc, char **argv)
 {
-	int ret;
-	unsigned char buf[MAX_MAC_PKT_LEN+12] = {0};
-	int fd;
-	struct stat st;
-	int send_len;
-	int i=0;
-	
-	eth0_open();	
+    int ret;
+    unsigned char buf[MAX_MAC_PKT_LEN+12] = {0};
+    int fd;
+    struct stat st;
+    int send_len;
+    int i=0;
 
-	memcpy((unsigned char *)(&start_web_packet.src_mac[0]),(unsigned char *)(&ifr0.ifr_hwaddr.sa_data[0]),ETH_ALEN);
+    eth0_open();	
 
-	start_web_packet.dest_mac[0] = 0x00;
-	start_web_packet.dest_mac[1] = 0x00;
-	start_web_packet.dest_mac[2] = 0x01;
-	start_web_packet.dest_mac[3] = 0x02;
-	start_web_packet.dest_mac[4] = 0x03;
-	start_web_packet.dest_mac[5] = 0x04;
+    memcpy((unsigned char *)(&start_web_packet.src_mac[0]),(unsigned char *)(&ifr0.ifr_hwaddr.sa_data[0]),ETH_ALEN);
 
-	start_web_packet.type = ETH_P_ST_WEB;
+    start_web_packet.dest_mac[0] = 0x00;
+    start_web_packet.dest_mac[1] = 0x00;
+    start_web_packet.dest_mac[2] = 0x01;
+    start_web_packet.dest_mac[3] = 0x02;
+    start_web_packet.dest_mac[4] = 0x03;
+    start_web_packet.dest_mac[5] = 0x04;
 
-	while(1)
-	{
-	    ret = send(eth0.sock_fd, (unsigned char *)&start_web_packet, sizeof(start_web_packet), 0);
-		if (-1 == ret) 
-		    printf("send error");
+    start_web_packet.type = ETH_P_ST_WEB;
+
+    while(1)
+    {
+        ret = send(eth0.sock_fd, (unsigned char *)&start_web_packet, sizeof(start_web_packet), 0);
+        if (-1 == ret) 
+            printf("send error");
 
         sleep(2);
     }
-	return 0;
+    return 0;
 }
